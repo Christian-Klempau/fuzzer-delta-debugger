@@ -32,6 +32,33 @@ int reducer = 0;
 
 int step_state_v1()
 {
+    // advance state
+    if (which == 0)
+    {
+        N_CLAUSES += N_LINES_STEP;
+    }
+    else if (which == 1)
+    {
+        N_VARS += N_VARS_STEP;
+    }
+    else if (which == 2)
+    {
+        MAX_INT += MAX_INT_STEP;
+    };
+
+    if (N_CLAUSES > MAX_LINES)
+    {
+        N_CLAUSES = MAX_LINES;
+        N_LINES_STEP = 0;
+    };
+
+    if (N_VARS > MAX_VARS)
+    {
+        N_VARS = MAX_VARS;
+        N_VARS_STEP = 0;
+    };
+
+    // limit state growth
     if (reducer == 100)
     {
         if (which == 0)
@@ -50,30 +77,15 @@ int step_state_v1()
         reducer = 0;
     };
 
-    // if (which == 0)
-    // {
-    //     N_CLAUSES += N_LINES_STEP;
-    // }
-    // else if (which == 1)
-    // {
-    //     N_VARS += N_VARS_STEP;
-    // }
-    // else if (which == 2)
-    // {
-    //     MAX_INT += MAX_INT_STEP;
-    // };
+    // make sure we don't have 0's
+    if (N_VARS == 0)
+        N_VARS = 1;
+    if (N_CLAUSES == 0)
+        N_CLAUSES = 1;
+    if (MAX_INT == 0)
+        MAX_INT = 1;
 
-    // if (N_CLAUSES > MAX_LINES)
-    // {
-    //     N_CLAUSES = MAX_LINES;
-    //     N_LINES_STEP = 0;
-    // };
-
-    // if (N_VARS > MAX_VARS)
-    // {
-    //     N_VARS = MAX_VARS;
-    //     N_VARS_STEP = 0;
-    // };
+    // advance counter
     reducer++;
     which = (which + 1) % 3;
 
@@ -109,6 +121,7 @@ int step_state_v2()
 void print_state()
 {
     printf("N_LINES: %d N_VARS: %d MAX_INT: %d\n", N_CLAUSES, N_VARS, MAX_INT);
+    printf("Which: %d Reducer %d\n", which, reducer);
 }
 
 int random2(int min, int max)
@@ -271,7 +284,7 @@ void fuzz()
     int *found_statuses = calloc(100, sizeof(int));
     int exit_status;
 
-    int END = 1000000;
+    int END = 1000;
     for (int i = 0; i < END; i++)
     {
         Clause *lines = generate_lines();
@@ -280,8 +293,7 @@ void fuzz()
         if (found_statuses[exit_status] == 0)
         {
             found_statuses[exit_status] = 1;
-            printf("%d\n", exit_status);
-            printf("i: %d\n", i);
+            printf("CODE: %d - #iter: %d\n", exit_status, i);
         };
 
         free_lines(lines);
