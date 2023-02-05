@@ -16,10 +16,14 @@
 // to get time(), for random seed
 #include <time.h>
 
+// local libraries
 #include "state.h"
 #include "clauses.h"
 #include "random.h"
 
+/*
+ * Only for debugging purposes
+ */
 void print_array_int(int *data, int size)
 {
     for (int i = 0; i < size; i++)
@@ -29,6 +33,9 @@ void print_array_int(int *data, int size)
     printf("\n");
 }
 
+/*
+ * Given a filepath with a wcnf file, executes the parser/solver and returns the exit code
+ */
 int execute_solver(const char *file_name)
 {
     // Based on: https://stackoverflow.com/questions/2667095/how-to-get-the-return-value-of-a-program-ran-via-calling-a-member-of-the-exec-fa
@@ -62,13 +69,33 @@ int execute_solver(const char *file_name)
     return EXIT_FAILURE;
 };
 
+/*
+ * Writes the lines to a file, then executed ddmin to try to reduce it
+ */
+int execute_delta_debugger(const char *file_name, Clause *lines)
+{
+    printf("file name: %s\n", file_name);
+    FILE *to_delta_debug = fopen(file_name, "w");
+    write_lines(to_delta_debug, lines);
+    fclose(to_delta_debug);
+    char execute_dd[1024];
+    char *python_path = "python delta_debugger/main.py";
+    char *output_folder = "delta_debugger_output";
+    char *solver_path = "./solver_data/parser";
+
+    sprintf(execute_dd, "%s --input-file %s --output-folder %s --binary-file %s --preserve-ret-code 1 --valid-ret-codes 0", python_path, file_name, output_folder, solver_path);
+
+    system(execute_dd);
+    return 0;
+};
+
 void fuzz()
 {
     int time_seed = time(NULL);
     set_seed(time_seed);
 
-    // const char *file_name = tmpnam(NULL); // Get temp name
-    const char *file_name = "test.txt"; // Get temp name
+    const char *file_name = tmpnam(NULL); // Get temp name
+    // const char *file_name = "test.txt"; // Get temp name
     FILE *fp = fopen(file_name, "w");
     printf("file name: %s\n", file_name);
     printf("Seed: %d\n", time_seed);
@@ -99,7 +126,7 @@ void fuzz()
                 {
                     hard_clause_prob = get_random_uniform();
                     positive_variable_prob = get_random_uniform();
-                    //printf("\n----- hard prob: %f - positive prob: %f-----\n", hard_clause_prob, positive_variable_prob);
+                    // printf("\n----- hard prob: %f - positive prob: %f-----\n", hard_clause_prob, positive_variable_prob);
                 };
                 Clause *lines = generate_lines(hard_clause_prob, positive_variable_prob);
                 write_lines(fp, lines);
@@ -107,7 +134,13 @@ void fuzz()
                 if (found_statuses[exit_status] == 0)
                 {
                     found_statuses[exit_status] = 1;
-                    printf("CODE: %d\n", exit_status);
+                    printf("\n\033[0;31mCODE: %d\n\n\033[0m", exit_status);
+                    if (exit_status == 0)
+                        break;
+
+                    char dd_file_name[50];
+                    sprintf(dd_file_name, "delta_debugger_output/dd_original_%d.wcnf", exit_status);
+                    execute_delta_debugger(dd_file_name, lines);
                 };
 
                 free_lines(lines);
