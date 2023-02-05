@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "*.html.erb": "html",
+        "*.css": "tailwindcss",
+        "*.tcc": "c",
+        "istream": "c",
+        "typeinfo": "c",
+        "array": "c",
+        "algorithm": "c",
+        "random": "c",
+        "numeric": "c"
+    }
+}

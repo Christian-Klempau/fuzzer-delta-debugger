@@ -1,0 +1,6 @@
+Faulty parser to test the delta debugger of exercise sheet 7
+Feel free to add additional faults and wcnf files
+If you want you can send me the new faults and files, I upload them
+
+./configure && make
+./parser #wcnf-file

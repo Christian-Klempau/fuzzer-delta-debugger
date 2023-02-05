@@ -1,0 +1,8 @@
+CXX=@CXX@
+CXXFLAGS=@CXXFLAGS@
+all: parser
+solver: parser.cpp makefile
+	$(CXX) $(CXXFLAGS) -o $@ $<
+clean:
+	rm -f parser makefile 
+.PHONY: clean 
