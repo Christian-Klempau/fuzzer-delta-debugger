@@ -78,27 +78,45 @@ void fuzz()
 
     // 0.0 - 0.5   + v2  : 33, 38
     // 0.5 - 0.5   + v2  : 31, 33, 34
-    float hard_clause_prob = 0.0;
-    float positive_variable_prob = 0.5;
 
-    int END = 2000;
-    reset_state();
-    for (int i = 0; i < END; i++)
+    float hard_clause_prob;
+    float positive_variable_prob;
+
+    int N_ITERS;
+    for (int type = 1; type <= 3; type++)
     {
-        Clause *lines = generate_lines(hard_clause_prob, positive_variable_prob);
-        write_lines(fp, lines);
-        exit_status = execute_solver(file_name);
-        if (found_statuses[exit_status] == 0)
+        for (int growth = 0; growth < 3; growth++)
         {
-            found_statuses[exit_status] = 1;
-            printf("CODE: %d - #iter: %d\n", exit_status, i);
-        };
+            N_ITERS = 1000 + 4000 * (growth);
+            reset_state();
+            hard_clause_prob = get_random_uniform();
+            positive_variable_prob = get_random_uniform();
+            printf("\n-------------- Type: %d - Growth: %d - N_ITERS: %d --------------\n", type, growth, N_ITERS);
 
-        free_lines(lines);
-        fseek(fp, 0, SEEK_SET);
-        truncate(file_name, 0);
-        advance_state(2);
-    };
+            for (int n_iter = 0; n_iter < N_ITERS; n_iter++)
+            {
+                if (n_iter % 100 == 0)
+                {
+                    hard_clause_prob = get_random_uniform();
+                    positive_variable_prob = get_random_uniform();
+                    //printf("\n----- hard prob: %f - positive prob: %f-----\n", hard_clause_prob, positive_variable_prob);
+                };
+                Clause *lines = generate_lines(hard_clause_prob, positive_variable_prob);
+                write_lines(fp, lines);
+                exit_status = execute_solver(file_name);
+                if (found_statuses[exit_status] == 0)
+                {
+                    found_statuses[exit_status] = 1;
+                    printf("CODE: %d\n", exit_status);
+                };
+
+                free_lines(lines);
+                fseek(fp, 0, SEEK_SET);
+                truncate(file_name, 0);
+                advance_state(type);
+            };
+        };
+    }
 
     free(found_statuses);
     fclose(fp);

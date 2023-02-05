@@ -53,6 +53,9 @@ void advance_state(int version)
     case 2:
         step_state_v2();
         break;
+    case 3:
+        step_state_v3();
+        break;
     default:
         assert(1 <= version && version <= MAX_VERSION), "Invalid advance_state version";
         break;
@@ -152,6 +155,15 @@ void step_state_v2()
 
     return;
 };
+
+void step_state_v3()
+{
+    MAX_INT_STEP = 11;
+    N_LINES_STEP = 11;
+    N_VARS_STEP = 11;
+    step_state_v1();
+    return;
+}
 
 /*
  * Print the current state of the fuzzer

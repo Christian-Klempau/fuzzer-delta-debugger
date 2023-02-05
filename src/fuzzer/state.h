@@ -19,4 +19,5 @@ void reset_state();
 void advance_state(int version);
 void step_state_v1();
 void step_state_v2();
+void step_state_v3();
 void print_state();

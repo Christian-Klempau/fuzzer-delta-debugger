@@ -66,13 +66,20 @@ int random3(int max)
 }
 
 /*
+ * returns: a random float in [0, 1], sampled from a uniform distribution
+ */
+float get_random_uniform()
+{
+    return random() / (double)((1L << 31) - 1);
+}
+/*
  * probability: a float between 0 and 1
  *
  * returns: 1 with probability p, 0 with probability 1-p, using a uniform distribution
  */
 int random_binary_uniform(float probability)
 {
-    float uniform = random() / (double)((1L << 31) - 1);
+    float uniform = get_random_uniform();
     if (uniform < probability)
     {
         return 1;
